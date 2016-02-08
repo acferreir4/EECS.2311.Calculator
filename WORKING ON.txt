@@ -1,7 +1,9 @@
 This file is to document specifically who is doing what.
 List all the methods you are documenting/testing
 
-Tedi Papajorgji ------
+Yari-----
+
+Tedi-----
 
 
-Andrew Ferraria
+Andrew-----
