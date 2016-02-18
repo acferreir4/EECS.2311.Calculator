@@ -7,3 +7,7 @@ Tedi-----
 
 
 Andrew-----
+Feb 18
+-writing test script for model
+-testing: all currently implemented calc functions
+
