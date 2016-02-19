@@ -43,17 +43,14 @@ public class SimpleView extends View implements ActionListener
     private final String[] operator = { "+", "-", "*",  "/"}; */
     
     private String[][] buttonTag = { 
-            
                                      { "+", "-", "x",  "/"},
                                      { "0", "5", "1", "6", "2", "7", "3", "8","4","9"},
                                      {"CLEAR", "ENTER","select", "value", "undo"}
-
                                    }; 
     
     SimpleView() 
     {
         super("Postfix Calculator");
-        
         
         setSize(327, 377);  //  size of the frame
         setResizable(false);  // frame cannot be resized
@@ -63,12 +60,7 @@ public class SimpleView extends View implements ActionListener
 	    setStyle();
 	    textfield = new JTextField(16);
 	    append = new Append();
-	    
-	    
-	    
-        
-	    
-	    
+
 	    
 	    f1 = new FlowLayout(FlowLayout.CENTER,0,19);  // for top panel
         f2 = new FlowLayout(FlowLayout.CENTER,7,3);  //  for bottom panel

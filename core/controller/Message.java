@@ -1,8 +1,4 @@
-
 public class Message 
 {
-  protected String content,source;
-  
-  
-  
+	protected String content,source;
 }

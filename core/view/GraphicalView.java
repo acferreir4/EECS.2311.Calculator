@@ -17,7 +17,6 @@ import javax.swing.border.*;
 
 public class GraphicalView extends View implements ActionListener
 {
-	
 	   
     private Color background = new Color(102,108,63,200);    
     
@@ -38,41 +37,29 @@ public class GraphicalView extends View implements ActionListener
     
     
     private String[][] buttonTag = { 
-            
                                         { "+", "-", "x",  "/",  "(-)", "!",  "pi"},
                                         { "4", "3", "2", "1", "0", "9", "8", "7","6","5"},
                                         {"CLEAR", "ENTER","select", "value", "undo"},                                                                               
                                         {"sin","cos","rad"}
-
                                    }; 
     
     GraphicalView() 
     {
         super("Postfix Calculator");
         
-        
         setSize(327, 450);  //  size of the frame
         setResizable(false);  // frame cannot be resized
         setDefaultCloseOperation(EXIT_ON_CLOSE);   // to exit the frame when closed
-	     // setLayout(new BoxLayout( this, BoxLayout.Y_AXIS));
+	    // setLayout(new BoxLayout( this, BoxLayout.Y_AXIS));
 	    getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
 	    setStyle();
 	    textfield = new JTextField(16);
 	    append = new Append();
-	    
-	    
-	    
-        
-	    
-	    
-	    
+
 	    f1 = new FlowLayout(FlowLayout.CENTER,3,19);  // for top panel
 	    f11 = new FlowLayout(FlowLayout.CENTER,3,0);  // for graphing panel
         f2 = new FlowLayout(FlowLayout.CENTER,2,0);  //  for bottom panel
-        
-        
-       
-        
+
 	    characters = 0;
         dot = false;
         
@@ -92,7 +79,6 @@ public class GraphicalView extends View implements ActionListener
     	createButtons(buttonTag,buttonDimension);
     	createTextField();
     	designLayout();
-    	
     }
     
     protected void createButtons(String[][] ragged,Dimension[]  buttonDimension)
@@ -101,77 +87,71 @@ public class GraphicalView extends View implements ActionListener
     	// System.out.println("passed len = "+ragged.length);
     	Font buttonFont =  new Font(Font.SANS_SERIF, Font.BOLD, 15) ; 
         button = new JButton[ragged.length][];
-       // for(int b = 0; b < ragged.length; b++)button[b] = new JButton[ragged[b].length];  
+        // for(int b = 0; b < ragged.length; b++)button[b] = new JButton[ragged[b].length];  
         // System.out.println("hereAftr");
         dotButton = new JButton();
         
         for(int b = 0; b < ragged.length; b++)
         {
-           button[b] = new JButton[ragged[b].length];
-          for(int i = 0; i <ragged[b].length; i++) 
-          {
-        	  
-        	  
-        	 button[b][i] = new JButton();
-            (button[b][i]).setText(buttonTag[b][i]);
-            (button[b][i]).setFont(buttonFont);
-            // if (b==2)(button[b][i]).setBackground(new Color( 169,219,128 ));
-            (button[b][i]).setBackground(myBronze);
+        	button[b] = new JButton[ragged[b].length];
+          
+        	for(int i = 0; i <ragged[b].length; i++)
+        	{
+        		button[b][i] = new JButton();
+        		(button[b][i]).setText(buttonTag[b][i]);
+        		(button[b][i]).setFont(buttonFont);
+        		// if (b==2)(button[b][i]).setBackground(new Color( 169,219,128 ));
+        		(button[b][i]).setBackground(myBronze);
 	    
-	        (button[b][i]).setMinimumSize(buttonDimension[b]); 
-	        (button[b][i]).setMaximumSize(buttonDimension[b]);
+        		(button[b][i]).setMinimumSize(buttonDimension[b]); 
+        		(button[b][i]).setMaximumSize(buttonDimension[b]);
 	        
-	        
-	       
-	       
-	        //Set JButton text color
-	         button[b][i].setForeground(new Color(0,0,0));  
+        		//Set JButton text color
+        		button[b][i].setForeground(new Color(0,0,0));  
 	         
 	         
-            (button[b][i]).addActionListener(this);
-          }
-         }
+	        		(button[b][i]).addActionListener(this);
+	        }
+	    }
         
-        
-         
-         dotButton.setText(".");
-         dotButton.setFont(buttonFont);
-         dotButton.setBackground(myOrange);
-         // dotButon.setForeground(Color.GREEN);
+        dotButton.setText(".");
+        dotButton.setFont(buttonFont);
+        dotButton.setBackground(myOrange);
+        // dotButon.setForeground(Color.GREEN);
     
-         dotButton.setMinimumSize(buttonDimension[0]); 
-         dotButton.setMaximumSize(buttonDimension[0]);
-         // Color color=new Color(204,204,0); // 204,204,0
+        dotButton.setMinimumSize(buttonDimension[0]); 
+        dotButton.setMaximumSize(buttonDimension[0]);
+        // Color color=new Color(204,204,0); // 204,204,0
 	        
-	        //Set JButton text color
-	        dotButton.setForeground(myGreenish);  
+	    //Set JButton text color
+	    dotButton.setForeground(myGreenish);  
     	    
-         dotButton.addActionListener(this);
+        dotButton.addActionListener(this);
     }
     
     protected void createTextField()
     {
-    	 Dimension fieldDimension = new Dimension(279, 70);
-    	 Font fieldFont =  new Font(Font.SANS_SERIF, Font.BOLD, 20) ;
-    	 // Color grn = ;   //  47,79,79
-    		textfield.setBackground(new Color(  0,99,0  ));   //    color   pp  
-    		textfield.setForeground(Color.GREEN);
-    	        // Font fieldFont = new Font("Times new Roman", Font.BOLD, 19);
-    	        // field.setFont(fieldFont);
-    		textfield.setFont(fieldFont);
-    	        textfield.setEditable(false);
-    	         // textfield.setComponentOrientation(ComponentOrientation.CENTER);
-    	        textfield.setPreferredSize(fieldDimension);   //  textfield.setPreferredSize(fieldDimension); 
+    	Dimension fieldDimension = new Dimension(279, 70);
+    	Font fieldFont =  new Font(Font.SANS_SERIF, Font.BOLD, 20) ;
+    	// Color grn = ;   //  47,79,79
+    	textfield.setBackground(new Color(  0,99,0  ));   //    color   pp  
+    	textfield.setForeground(Color.GREEN);
+    	// Font fieldFont = new Font("Times new Roman", Font.BOLD, 19);
+    	// field.setFont(fieldFont);
+    	textfield.setFont(fieldFont);
+    	textfield.setEditable(false);
+    	// textfield.setComponentOrientation(ComponentOrientation.CENTER);
+    	textfield.setPreferredSize(fieldDimension);   //  textfield.setPreferredSize(fieldDimension); 
     	        
-    	        // textfield.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
-    	        Color c1 = new Color(86, 86, 86);
-    	       // Color c2 = new Color(192, 192, 192);
-    	        Color c3 = new Color(204, 204, 204);
-    	        Border b1 = new BevelBorder(EtchedBorder.RAISED, c3, c3 );  //c1, c3
-    	        Border b2 = new MatteBorder(3, 3, 3, 3, new Color(  204 , 198 , 108  ));  // base -   p 204 , 198 , 108
-    	        Border b3 = new BevelBorder(EtchedBorder.LOWERED, c3, c1);
+    	// textfield.setComponentOrientation(ComponentOrientation.RIGHT_TO_LEFT);
+    	Color c1 = new Color(86, 86, 86);
+    	// Color c2 = new Color(192, 192, 192);
+    	Color c3 = new Color(204, 204, 204);
+    	Border b1 = new BevelBorder(EtchedBorder.RAISED, c3, c3 );  //c1, c3
+    	Border b2 = new MatteBorder(3, 3, 3, 3, new Color(  204 , 198 , 108  ));  // base -   p 204 , 198 , 108
+    	Border b3 = new BevelBorder(EtchedBorder.LOWERED, c3, c1);
     	        
-    	        textfield.setBorder(new CompoundBorder(new CompoundBorder(b1, b2), b3));
+    	textfield.setBorder(new CompoundBorder(new CompoundBorder(b1, b2), b3));
     }
     
     private void designLayout()
@@ -198,14 +178,10 @@ public class GraphicalView extends View implements ActionListener
 	    
 	     curve.setBorder(     new CompoundBorder(new CompoundBorder(b1, b2), b3)    );
 	    
-	      graphingPanel.add(curve);
+	     graphingPanel.add(curve);
 	    
 	     add(graphingPanel);
-	     
-	     
-        
-	     
-	     
+
 	     
 	     bottomPanel = new JPanel(); 
     	 bottomPanel.setBackground(background);  
@@ -232,11 +208,11 @@ public class GraphicalView extends View implements ActionListener
 	     // box[2].setBorder(new CompoundBorder(  new EmptyBorder(3,4,3,4), new CustomBorder(5,5)));
 	     
 	   
-	  // adding op buttonss       
+	     // adding op buttonss       
 	
-	// box[0].add(dotButton);  box[0].add(Box.createRigidArea(new Dimension(0, 4)));
+	     // box[0].add(dotButton);  box[0].add(Box.createRigidArea(new Dimension(0, 4)));
 	
-	// adding instruction buttons       
+	     // adding instruction buttons       
 	
 	
 	     innerPanel = new JPanel(); //  for box2
@@ -253,11 +229,11 @@ public class GraphicalView extends View implements ActionListener
 	     
 	     
         
-    	bottomPanel.add(holder);
-        // bottomPanel.add(innerPanel);
-        bottomPanel.add(box[2]);
+	     bottomPanel.add(holder);
+	     // bottomPanel.add(innerPanel);
+	     bottomPanel.add(box[2]);
         
-       // bottomPanel.setBorder(new CompoundBorder(  new EmptyBorder(10,16,11,16), new CustomBorder(10,10)));
+	     // bottomPanel.setBorder(new CompoundBorder(  new EmptyBorder(10,16,11,16), new CustomBorder(10,10)));
        
 	     add(bottomPanel);
 	     
@@ -273,90 +249,95 @@ public class GraphicalView extends View implements ActionListener
     }
     
     
-    
     private final void setStyle()
     {
-        try {
+        try 
+        {
             UIManager.setLookAndFeel("com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel"); 
-        } catch(Exception exc) { 
-        	                    System.out.println(" Could not plug look and feel ! daaamn !");  
-        	                    System.out.println(exc.getMessage());
- 	        	                System.out.println(  exc.getLocalizedMessage()  );
-                             }
+        } 
+        catch(Exception exc) 
+        { 
+        	System.out.println(" Could not plug look and feel ! daaamn !");
+        	System.out.println(exc.getMessage());
+        	System.out.println(  exc.getLocalizedMessage()  );
+        }
     }
-    
-    
     
     
     public void actionPerformed(ActionEvent evnt)
     {
     	SimpleMessage msg = new SimpleMessage();
         boolean found = false;
+        
         if(evnt.getSource() == dotButton)  // dot button
-            { 
-        	 if(!dot)  // view ignores too many dots
-        	 {
-        		  
-              if(append.on())textfield.setText(textfield.getText()+".");
- 			  else 
- 			      { 
- 				    clear(); 
+        {
+        	if(!dot)  // view ignores too many dots
+        	{
+        		if(append.on())
+        		{
+        			textfield.setText(textfield.getText()+".");
+        		}
+        		else 
+ 			    {
+        			clear(); 
  				    textfield.setText("."); 
  				    if(!append.on())append.flip();
- 				  }
-              characters++;
-              dot = true;
-              found = true; 
-        	 }
-            }
+ 				}
+        		characters++;
+        		dot = true;
+        		found = true; 
+        	}
+        }
+        
         if(!found) 
           {
         	   for(int i = 0; i < 10; i++)  //  number buttons
         	   {
-        		   
-        		 if (evnt.getSource() == button[1][i])
-        		 {        			 
-        			 if(append.on())textfield.setText(textfield.getText()+buttonTag[1][i]);
-        			 else {        				    
-        				    textfield.setText(buttonTag[1][i]); 
-        				    if(!append.on())append.flip();
-        				  }
-                     characters++;
-                     found = true;
-                     break ;
-        		 }
+        		   if (evnt.getSource() == button[1][i])
+        		   {        			 
+        			   if(append.on())
+        			   {
+        				   textfield.setText(textfield.getText()+buttonTag[1][i]);
+        			   }
+        			   else 
+        			   {        				    
+        				   textfield.setText(buttonTag[1][i]); 
+        				   if(!append.on())append.flip();
+        			   }
+        			   
+        			   characters++;
+        			   found = true;
+        			   break;
+        		   }
                }
         	   
         	   
                if(!found)
                {
-        		     //  other buttons
-               	                 		   
-               		 if( evnt.getSource() == button[0][0] )   // +
-               		 {
-               			 
-                          if( characters>0 )   msg.content = textfield.getText() ;
-                          else  msg.content = EMPTY ; 
-                        	 
-                          msg.source = buttonTag[0][0] ;
-                          if (append.on()) msg.state = "append";
-                          else msg.state = "replace";
-                          monitor.inform(msg);
-                          
-               		 }
-               		 
-               		 else if (evnt.getSource() == button[0][1])  // -
-              		 {
-              			 
-               			if( characters>0 )   msg.content = textfield.getText() ;
-                        else  msg.content = EMPTY ; 
+            	   //  other buttons  		   
+            	   if( evnt.getSource() == button[0][0] )   // +
+            	   {
+            		   if( characters>0 )   msg.content = textfield.getText() ;
+            		   else  msg.content = EMPTY ;
+            		   
+            		   msg.source = buttonTag[0][0] ;
+                       
+            		   if (append.on()) msg.state = "append";
+                       else msg.state = "replace";
+                       
+            		   monitor.inform(msg);
+            	   }
+            	   
+            	   else if (evnt.getSource() == button[0][1])  // -
+            	   {
+            		   if( characters>0 )   msg.content = textfield.getText() ;
+            		   else  msg.content = EMPTY ; 
                       	 
-                        msg.source = buttonTag[0][1] ;
-                        if (append.on()) msg.state = "append";
-                        else msg.state = "replace";
-                        monitor.inform(msg);
-                           
-              		 }
+                       msg.source = buttonTag[0][1] ;
+                       if (append.on()) msg.state = "append";
+                       else msg.state = "replace";
+                       monitor.inform(msg);
+                   }
                		
                		 else if (evnt.getSource() == button[0][2])   // *
               		 {
@@ -505,8 +486,6 @@ public class GraphicalView extends View implements ActionListener
                        if (append.on()) msg.state = "append";
                        else msg.state = "replace";
                        monitor.inform(msg);
-                      
-                        
            		    }
                }		 
             
@@ -517,12 +496,10 @@ public class GraphicalView extends View implements ActionListener
     public void setMonitor(VMC vmc) 
     {
     	monitor = vmc;
-    	
     }
     
     public void display(String outp) 
     {
-    	
     	System.out.println("display output = "+outp);
     	
     	textfield.setText(outp);
@@ -531,15 +508,17 @@ public class GraphicalView extends View implements ActionListener
     	dot = false;
     	// textfield.repaint();
     	// processing = false;
-    	
     }
+    
     protected void clear() 
-    {System.out.println("clearing textfield");
-    	  textfield.setText("") ;
-		  characters = 0;
-		 dot = false;
-		 // append();
+    {
+    	System.out.println("clearing textfield");
+    	textfield.setText("") ;
+		characters = 0;
+		dot = false;
+		// append();
     }
+    
     public void setFieldState(boolean currentState)
     {
     	if(currentState)if(!append.on())append.flip();
@@ -549,7 +528,7 @@ public class GraphicalView extends View implements ActionListener
     public void sin(int x, double y)
     {  
     	curve.input(x,y,"sin");
-    	 // curve.revalidate();
+    	// curve.revalidate();
     	curve.repaint();
     	// graphingPanel.setVisible(true);
     	DisplayFormat f = new DisplayFormat(y);
@@ -560,7 +539,7 @@ public class GraphicalView extends View implements ActionListener
     {
     	curve.input(x,y,"cos");
     	curve.repaint();
-    	 // curve.revalidate();
+    	// curve.revalidate();
     	
     	DisplayFormat f = new DisplayFormat(y);
     	display(f.format());
@@ -580,7 +559,6 @@ public class GraphicalView extends View implements ActionListener
     	private String curve;
         private int lastY ;
         private int degree;
- 
         
         public Curve( boolean cnct)
         {
@@ -593,7 +571,6 @@ public class GraphicalView extends View implements ActionListener
         	
         	lastY = 0;
         	draw = false;
-        	
         }
         
         
@@ -614,6 +591,7 @@ public class GraphicalView extends View implements ActionListener
         {
         	connect = b;       
         }
+        
         double radian (int deg)
         {
             return ((2*Math.PI)/360.0) * deg;
@@ -641,7 +619,6 @@ public class GraphicalView extends View implements ActionListener
         
         public void paintComponent (Graphics g)
         {
-           
             super.paintComponent(g);
             int width = getWidth();
             int height = getHeight();
@@ -693,16 +670,7 @@ public class GraphicalView extends View implements ActionListener
             }
             draw = false;
         }
-        
-        
-        
-    }
-    
-    
-
-    
-    
-    
+    }  
 }
 
 

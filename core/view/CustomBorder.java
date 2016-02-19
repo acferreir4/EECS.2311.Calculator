@@ -1,4 +1,3 @@
-
 /** 
  *    
  *  =================================================== 
@@ -13,7 +12,6 @@ import javax.swing.border.*;
 
 public class CustomBorder implements Border 
 {
-
   protected int m_w=6;
   protected int m_h=6;
   protected Color m_topColor = Color.white;
@@ -75,4 +73,3 @@ public class CustomBorder implements Border
     frame.setVisible(true);
   } */
 }
-

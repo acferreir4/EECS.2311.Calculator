@@ -1,4 +1,3 @@
-
 public class SimpleMessage extends Message 
 {   
     private final String[] instruction = {"clear","select", "value", "undo","+", "-", "x",  "/","sin","cos","enter","rad","!","pi","sign"};
@@ -9,14 +8,11 @@ public class SimpleMessage extends Message
 	{
 		content = newMsg;
 	}*/
-	
     
     public void reply(String rep)
     {
-  	  
-  	  reply = rep;
+    	reply = rep;
     }
-    
     
 	public int type()
 	{

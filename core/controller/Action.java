@@ -6,21 +6,15 @@
  */
  public class Action<T>
 {
-	
-	private T value;
-	
 	// private int range ;
-	
+	private T value;
 	private char operator;
-	
-	 
 	
 	
 	public Action(T val, char op)
 	{
-		
-		value = val;
 		// range = span ;
+		value = val;
 		operator = op ;
 	} 
 	
@@ -44,9 +38,7 @@
 	public void setValue(T val)
 	{
 	  if(operator=='0') value = val;
-	}
-			
+	}		
 }
-	
 
 

@@ -1,9 +1,5 @@
-
-
-
 public class Controller 
 {
-	
 	protected Model model;
 	// protected View view;
 	protected int occurance(String word, String character )
