@@ -43,6 +43,10 @@ public class GraphicalView extends View implements ActionListener
                                         {"sin","cos","rad"}
                                    }; 
     
+    /**
+     * GraphicalView constructor
+     * Sets up various window parameters
+     */
     GraphicalView() 
     {
         super("Postfix Calculator");
@@ -68,6 +72,10 @@ public class GraphicalView extends View implements ActionListener
         setVisible(true);
     }
     
+    /**
+     * Initializes key window components such as
+     * buttons, textfields and the layout
+     */
     private void initialize()
     {
     	Dimension[] buttonDimension = new Dimension[4];
@@ -81,21 +89,27 @@ public class GraphicalView extends View implements ActionListener
     	designLayout();
     }
     
-    protected void createButtons(String[][] ragged,Dimension[]  buttonDimension)
+    /**
+     * Creates JButton instances and initializes
+     * various button parameters
+     * @param buttonTags Array containing each button label
+     * @param buttonDimension Array containing each button dimension
+     */
+    protected void createButtons(String[][] buttonTags,Dimension[]  buttonDimension)
     {
     	// System.out.println("here ");
     	// System.out.println("passed len = "+ragged.length);
     	Font buttonFont =  new Font(Font.SANS_SERIF, Font.BOLD, 15) ; 
-        button = new JButton[ragged.length][];
+        button = new JButton[buttonTags.length][];
         // for(int b = 0; b < ragged.length; b++)button[b] = new JButton[ragged[b].length];  
         // System.out.println("hereAftr");
         dotButton = new JButton();
         
-        for(int b = 0; b < ragged.length; b++)
+        for(int b = 0; b < buttonTags.length; b++)
         {
-        	button[b] = new JButton[ragged[b].length];
+        	button[b] = new JButton[buttonTags[b].length];
           
-        	for(int i = 0; i <ragged[b].length; i++)
+        	for(int i = 0; i <buttonTags[b].length; i++)
         	{
         		button[b][i] = new JButton();
         		(button[b][i]).setText(buttonTag[b][i]);
@@ -154,6 +168,11 @@ public class GraphicalView extends View implements ActionListener
     	textfield.setBorder(new CompoundBorder(new CompoundBorder(b1, b2), b3));
     }
     
+    /**
+     * Creates the main window layout
+     * and places all elements into
+     * proper area on window.
+     */
     private void designLayout()
     {
     	 topPanel = new JPanel(); 
@@ -249,6 +268,9 @@ public class GraphicalView extends View implements ActionListener
     }
     
     
+    /**
+     * Sets the look and feel of the application
+     */
     private final void setStyle()
     {
         try 
@@ -264,7 +286,12 @@ public class GraphicalView extends View implements ActionListener
     }
     
     
-    public void actionPerformed(ActionEvent evnt)
+    /**
+     * Called when a button is clicked
+     * Handles sending mesages to the controller
+     * @param evnt The ActionEvent of the button that was clicked
+     */
+    public void actionPerformed(ActionEvent evnt) 
     {
     	SimpleMessage msg = new SimpleMessage();
         boolean found = false;
@@ -492,12 +519,20 @@ public class GraphicalView extends View implements ActionListener
           }
     }
     
-    
+    /**
+     * Sets the controller for this view
+     * @param vmc
+     */
     public void setMonitor(VMC vmc) 
     {
     	monitor = vmc;
     }
     
+    /**
+     * Shows a given string
+     * in the output area.
+     * @param outp The output to display
+     */
     public void display(String outp) 
     {
     	System.out.println("display output = "+outp);
@@ -510,6 +545,9 @@ public class GraphicalView extends View implements ActionListener
     	// processing = false;
     }
     
+    /**
+     * Clears the input textfield
+     */
     protected void clear() 
     {
     	System.out.println("clearing textfield");
@@ -519,12 +557,23 @@ public class GraphicalView extends View implements ActionListener
 		// append();
     }
     
+    /**
+     * Switches the current state of the application
+     * @param currentState The state to set
+     */
     public void setFieldState(boolean currentState)
     {
-    	if(currentState)if(!append.on())append.flip();
+    	if(currentState)
+    		if(!append.on())append.flip();
+    	
     	else if(append.on())append.flip();
     }
     
+    /**
+     * Handles drawing sin functions
+     * @param x X-coordinate
+     * @param y Y-coordinate
+     */
     public void sin(int x, double y)
     {  
     	curve.input(x,y,"sin");
@@ -535,6 +584,11 @@ public class GraphicalView extends View implements ActionListener
     	display(f.format());
     }
     
+    /**
+     * handles drawing cos functions
+     * @param x X-coordinate
+     * @param y Y-coordinate
+     */
     public void cos(int x, double y)
     {
     	curve.input(x,y,"cos");
@@ -672,20 +726,3 @@ public class GraphicalView extends View implements ActionListener
         }
     }  
 }
-
-
-
-
-
-
-
-
-
-
-
- 
- 
-
-
-
-

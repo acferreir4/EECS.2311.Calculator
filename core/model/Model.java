@@ -1,12 +1,10 @@
-/**     
- *  =================================================== 
- *  author :  Yari Yousefian
- *  This class is the user interface   
- *  =================================================== 
- */
-
  import java.util.Stack;
 
+ /**
+  * Represents the model
+  * @author Yari Yousefian
+  *
+  */
 public class Model  
 {
 	private final double PI = 3.14159 ;
@@ -46,13 +44,22 @@ public class Model
 		totalComputations = 0;
 	}
 
+	/**
+	 * Inserts an action into the stack
+	 * for further processing
+	 * @param entry The value of the entry
+	 */
 	public void insert(Double entry)
 	{  
 		System.out.println("inserting "+entry);
 		stack.push( new Action<Double>(entry,'0') );
 		oprand.update(1);
 	}
-	
+
+	/**
+	 * Deletes an item from the stack
+	 * @return A string of the new expression
+	 */
 	public String delete()
 	{
 		// String result = "removed";
@@ -549,26 +556,51 @@ public class Model
 		
 	}
 	
+	/**
+	 * Performs the calculation for sin
+	 * @param degree The angle
+	 * @return The sin of the anlge
+	 */
 	public double sin(int degree)
 	{
 		return Math.sin(radian(degree)) ;
 	}
 	
+	/**
+	 * Performs the calculation for cos
+	 * @param degree The angle
+	 * @return The cos of the angle
+	 */
 	public double cos(int degree)
 	{
 		return Math.cos(radian(degree)) ;
 	}
 	
+	/**
+	 * Calculates the factorial
+	 * @param n The number to take the factorial of
+	 * @return The factorial
+	 */
 	public static int factorial(int n) 
 	{
 	    return (n <= 1) ? 1 : n*factorial(n-1);
 	}
 	
+	/**
+	 * Convert degrees to radians
+	 * @param deg The angle in degrees
+	 * @return The angle in radians
+	 */
 	public double radian(int deg)
     {
         return ((2*Math.PI)/360.0) * deg;
     }
 	
+	/**
+	 * 	Builds a mathematical expression based on user input
+	 *  that can be displayed in a nice way
+	 * @return The expression to display
+	 */
 	public String expression()
 	{
 		String result = "" ;
@@ -648,7 +680,10 @@ public class Model
 	  
      }
 	
-	
+	/**
+	 * Checks if a value of a chosen element is in the stack
+	 * @return
+	 */
 	public String check()  // can check the value of a chosen elemet in stack
 	{
 		
@@ -691,6 +726,12 @@ public class Model
 	}  
 	
 	
+	/**
+	 * Extracts selected element from stack
+	 * @param bottom The top elements index
+	 * @param top The bottom elements index
+	 * @return A stack from bottom to top index
+	 */
 	protected Stack<Action<Double>> pull(int bottom, int top)  // extract selected elements from stack
 	{
 		
@@ -741,7 +782,13 @@ public class Model
 	}  
 	
 	
-	
+	/**
+	 * Returns a stack with the values that the user
+	 * has entered
+	 * @param bottom Bottom of stack 
+	 * @param top
+	 * @return
+	 */
 	 protected Stack<Double> pick(int bottom, int top)  // return the values of selected items in stack 
 		{
 			System.out.println("pick --> bottom = "+bottom+" top = "+top);
@@ -792,6 +839,10 @@ public class Model
 				
 		}
 	 
+	 /**
+	  * Negates an element on the stack
+	  * @return The negated element as a string
+	  */
 	 public String negate()
 	 {
 			 String result = "changed";
@@ -848,17 +899,30 @@ public class Model
 			
 		}  */
 	 
-		
+	
+	 /**
+	  * Gets the stacks size
+	  * @return The stack size
+	  */
 	 public int weight()
      {
 		return stack.size();	
 	 }
 	 
+	 /**
+	  * Math constant pi
+	  * @return pi
+	  */
 	 public double pi()
      {
 	    return PI ;		
 	 }
 	 
+	 /**
+	  * How far along the stack an operator
+	  * should be applied to
+	  * @return
+	  */
 	 private int span()  // how far the operator to be applied, within current computation or accross history-list
      {
 		if(oprand.on()) return oprand.getTotalOprands();
@@ -867,7 +931,11 @@ public class Model
 	 }
 	 
 	 
-	 
+	 /**
+	  * Adds an element beneath the first element in the stack
+	  * @param val The value to add
+	  * @param op The math operator
+	  */
 	 private void shuffle(Double val,char op)
 	 {
 		Action<Double> top = stack.pop();

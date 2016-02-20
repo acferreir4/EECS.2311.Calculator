@@ -1,13 +1,11 @@
-/**     
- *  =================================================== 
- *  author :  Yari Yousefian
- *  This class is the user interface   
- *  =================================================== 
- */
-
 import java.text.DecimalFormat;
 import java.util.StringTokenizer;
 
+/**
+ * Formats the output to display on the screen
+ * @author Yari Yousefian
+ *
+ */
 public class DisplayFormat
 {
 	private Double value ;
@@ -15,23 +13,41 @@ public class DisplayFormat
 	private String result ;
 	private String integerPart, fraction;
 	  
+	/**
+	 * Constructs a display format with the given
+	 * value
+	 * @param val The value to format
+	 */
 	public DisplayFormat(Double val)
 	{
 		value = val;
 	    process();
 	}
 	   
+	/**
+	 * Returns the formatted string
+	 * @return The fomratted string
+	 */
 	public String format()
 	{		   	       
 	    return result;
 	}
 	   
+	/**
+	 * Re-proccess the interface
+	 * for a given value
+	 * @param val
+	 */
 	public void reset(Double val)
 	{
 	   value = val;
 	   process();
 	}
 	   
+	/**
+	 * Manages all steps required to properly format
+	 * a string
+	 */
 	private void process()
 	{
 		fragmented = true;
@@ -59,16 +75,28 @@ public class DisplayFormat
 	
 	}
 	   
+	/**
+	 * Determine if the expression has a decimal place
+	 * @return True if the expression has a decimal place
+	 */
 	public boolean hasFraction()
 	{
 		return fragmented;
 	}
 	   
+	/**
+	 * Returns the decimals from the number
+	 * @return The decimals from the given number
+	 */
 	public String getFraction()
 	{
 		return fraction;
 	}
-	   
+	 
+	/**
+	 * Gets the whole number part from the expression number
+	 * @return The whole number part
+	 */
 	public String getIntegerPart()
 	{
 		return integerPart;

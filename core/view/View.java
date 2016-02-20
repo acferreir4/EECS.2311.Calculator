@@ -1,23 +1,18 @@
-/**     
- *  =================================================== 
- *  author :  Yari Yousefian
- *  This class is the user interface   
- *  =================================================== 
- */
-
 import java.awt.Color;
 
 import javax.swing.JFrame ;
 import javax.swing.JTextField;
 import javax.swing.text.AbstractDocument;
 
+/**
+ * A class meant to be extended by all
+ * views that will be shown to the user
+ * @author Yari Yousefian
+ *
+ */
 public class View extends JFrame  
 {
-	// protected JTextField textfield ;
     protected int characters;
-    // protected Controller monitor;
-    // protected boolean append;
-    // mode 
     protected JTextField textfield ;
     protected final Color myOrange = new Color(255,69,0);
     protected final Color myBronze = new Color(201,99,51);
@@ -27,11 +22,11 @@ public class View extends JFrame
     View(String lbl) 
     {
         super(lbl);       
-        //replace();
-       // append();
     } 
     
-    
+    /**
+     * Defines the default backspace operation
+     */
     protected void backspace() 
     {
     	AbstractDocument doc = (AbstractDocument) textfield.getDocument();
@@ -53,33 +48,4 @@ public class View extends JFrame
     		// append();
     	}
     }
-    
-    /* protected void clear() 
-    {
-    	AbstractDocument doc = (AbstractDocument) textfield.getDocument();
-		  int length = doc.getLength() ;
-		  if(length>0)
-		  {
-	        int position = length - 1;
-	        
-	          try {
-	                doc.remove(position, length);
-	              } catch (Exception exc) 
-	                   { 
-	        	         System.out.println("Calculator could not reset !");
-	        	         System.out.println(exc.getMessage());
-	        	         System.out.println(  exc.getLocalizedMessage()  );
-	                   } 
-		  }
-		  characters = 0;
-    } */
-   
-    
-    
-    
-    /*protected void setMonitor(Controller controller) 
-    {
-    	
-    	
-    }*/
 }

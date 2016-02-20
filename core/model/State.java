@@ -1,7 +1,6 @@
 public class State
 {
 	protected boolean on;
-
 	protected void flip()
 	{
 		if(on)  	on = false;  

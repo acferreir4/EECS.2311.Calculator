@@ -1,22 +1,34 @@
 /**     
  *  =================================================== 
  *  author :  Yari Yousefian
- *  This class is the user interface   
- *  =================================================== 
- */
+ *  */
 
 public class SelectionState extends State
 {
 	private int upper,lower;
 	private int fill;
 	
+	/**
+	 * Constructs the SelectionState instance
+	 */
 	public SelectionState()
     {   	
 		// super();
 		// bound = new int[2];
 		initialize();
     }
-    
+	
+	/**
+	 * Sets all values to initial states
+	 */
+	 public void initialize()
+	    {
+	    	upper = 0;
+			lower =0;
+			fill = 0;
+			on = false;
+	    }
+
 	public void put(int index)
 	{
 		if(fill==0) { lower = index; on = true;  }
@@ -26,6 +38,12 @@ public class SelectionState extends State
 		fill++ ;
 	}
    
+	/**
+	 * Sets the upper and lower bounds
+	 * on a selection
+	 * @param low The lower bound index
+	 * @param high The higher bound index
+	 */
 	public void setBounds(int low, int high)
 	{
 		// if(fill==0)
@@ -35,11 +53,19 @@ public class SelectionState extends State
 		on = true;
 	}
    
+	/**
+	 * Outputs the selection range
+	 * @return
+	 */
 	public String range()
     {
     	return "selected range = [ "+Integer.toString(lower)+" , "+Integer.toString(upper)+" ]" ;
     }
    
+	/**
+	 * Creates a range with given size
+	 * @param size The size of the range
+	 */
     public void makeRange(int size)
     {
     	if(on && fill==1)
@@ -66,12 +92,6 @@ public class SelectionState extends State
     	return upper ;
     } 
     
-    public void initialize()
-    {
-    	upper = 0;
-		lower =0;
-		fill = 0;
-		on = false;
-    }
+   
    
 }

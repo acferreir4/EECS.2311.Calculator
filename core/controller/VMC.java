@@ -18,7 +18,12 @@ public class VMC extends Controller
 		format = new DisplayFormat(0.00);
 		prefix = 0;
 	}
-      
+    
+	/**
+	 * Informs the controller of input and ultimatley 
+	 * decides what should happen with the given input
+	 * @param msg The SimpleMessage instance of the button pressed
+	 */
 	public void inform(SimpleMessage msg)
 	{  
 		int cmd = msg.type();

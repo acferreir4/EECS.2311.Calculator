@@ -1,3 +1,7 @@
+/**
+ * Class is extended to create a new controller
+*/
+
 public class Controller 
 {
 	protected Model model;

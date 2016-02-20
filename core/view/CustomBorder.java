@@ -17,18 +17,37 @@ public class CustomBorder implements Border
   protected Color m_topColor = Color.white;
   protected Color m_bottomColor = Color.white;
 
+  /**
+   * Constructs a border
+   * with default values of 6 
+   * for width and height
+   */
   public CustomBorder() 
   {
     m_w=6;
     m_h=6;
   }
 
+  /**
+   * Constructs a border with
+   * given width and height
+   * @param w The width
+   * @param h The height
+   */
   public CustomBorder(int w, int h) 
   {
     m_w=w;
     m_h=h;
   }
 
+  /**
+   * Constructs a border with given width,
+   * height, and color
+   * @param w The width
+   * @param h The height
+   * @param topColor The color at the top border
+   * @param bottomColor The color at the bottom of the border
+   */
   public CustomBorder(int w, int h, Color topColor,  Color bottomColor) 
   {
     m_w=w;
@@ -42,8 +61,14 @@ public class CustomBorder implements Border
     return new Insets(m_h, m_w, m_h, m_w);
   }
 
+  /**
+   * Determine if border is opaque or not
+   */
   public boolean isBorderOpaque() { return true; }
 
+  /**
+   * Paints the border to the drawable area
+   */
   public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) 
   {
     w--;
