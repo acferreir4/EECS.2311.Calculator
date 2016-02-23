@@ -1,7 +1,8 @@
+
 /** 
  *    
  *  =================================================== 
- *  curved corner border   
+ *  Custom curved corner border   
  *  =================================================== 
  * 
  */ 
@@ -12,42 +13,24 @@ import javax.swing.border.*;
 
 public class CustomBorder implements Border 
 {
+
   protected int m_w=6;
   protected int m_h=6;
   protected Color m_topColor = Color.white;
   protected Color m_bottomColor = Color.white;
 
-  /**
-   * Constructs a border
-   * with default values of 6 
-   * for width and height
-   */
   public CustomBorder() 
   {
     m_w=6;
     m_h=6;
   }
 
-  /**
-   * Constructs a border with
-   * given width and height
-   * @param w The width
-   * @param h The height
-   */
   public CustomBorder(int w, int h) 
   {
     m_w=w;
     m_h=h;
   }
 
-  /**
-   * Constructs a border with given width,
-   * height, and color
-   * @param w The width
-   * @param h The height
-   * @param topColor The color at the top border
-   * @param bottomColor The color at the bottom of the border
-   */
   public CustomBorder(int w, int h, Color topColor,  Color bottomColor) 
   {
     m_w=w;
@@ -61,14 +44,8 @@ public class CustomBorder implements Border
     return new Insets(m_h, m_w, m_h, m_w);
   }
 
-  /**
-   * Determine if border is opaque or not
-   */
   public boolean isBorderOpaque() { return true; }
 
-  /**
-   * Paints the border to the drawable area
-   */
   public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) 
   {
     w--;
@@ -86,15 +63,5 @@ public class CustomBorder implements Border
     g.drawArc(x, y+h-2*m_h, 2*m_w, 2*m_h, -90, -90);
   }
 
-  /*  This part was only for testing by Yari
-  public static void main(String[] args) {
-    JFrame frame = new JFrame("Custom Border: OvalBorder");
-    JLabel label = new JLabel("OvalBorder");
-    ((JPanel) frame.getContentPane()).setBorder(new CompoundBorder(
-      new EmptyBorder(10,10,10,10), new OvalBorder(10,10)));
-    frame.getContentPane().add(label);
-    frame.setBounds(0,0,300,150);
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);	// 1.3  radial 
-    frame.setVisible(true);
-  } */
+  
 }

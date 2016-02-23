@@ -1,22 +1,19 @@
-/**
- * Main class
- * Gets everything going when the 
- * application is launched
- *
+/**     
+ *  =================================================== 
+ *  author :  Yari Yousefian
+ *  This class runs the System   
+ *  =================================================== 
  */
+
+
 public class Driver
 {
-	/**
-	 * Main method
-	 * Creates a new view, model and controller
-	 * @param args Command line arguments
-	 */
     public static void main(String[] args) 
     {
-          GraphicalView view = new GraphicalView();
-          Model model = new Model();
+          View view = new GraphicalView();
+          Model model = new Model(new Infix<Double>());
     	
-    	  new VMC(model,view);
+    	  new Controller(model,view);
        
     }
 }

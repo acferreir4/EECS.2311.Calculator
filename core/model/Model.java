@@ -1,97 +1,129 @@
- import java.util.Stack;
+/**     
+ *  =================================================== 
+ *  author :  Yari Yousefian
+ *  This class is model, the actual calculator   
+ *  =================================================== 
+ */
 
- /**
-  * Represents the model
-  * @author Yari Yousefian
-  *
-  */
+import java.util.ArrayList;
+import java.util.Stack;
+import java.util.StringTokenizer;
+
 public class Model  
 {
 	private final double PI = 3.14159 ;
+	private final int OPRAND = 1;
+	private final int COMPUTED = 2;
+	private final int COMPOUND = 3;
+	private final int EXPAND = 0;
+	private final int COMPRESS = 1;
+	
+	
 	private Stack<Action<Double>> stack;
 	private int  totalComputations;
 	private DisplayFormat format;
 	private SelectionState selection;
-	private OprandProcess oprand;
+	private int totalOprands;
+	private int inserted = 0;
+	private Expression<Double> expressionType;  // postfix or infix or prefix 
+	private ExpressionState expressionMode;
+	private Stack<Action<Double>> deleted;
 	
-	// private boolean processing;
-	private  String[] errorMsg = { "Error : index out of bound !",     // 0
-			                            "Invalid selection !",  //1
-			                            "Error: operator range too small !", //2
-			                            "Error: too many oprands !", //3
-			                            "Error : missing oprand !",//4		                            
-			                            "Error: missing or too many oprands !",   //5
-			                            "Error : integer entry required !", //6
-			                            "Selection out of bound !",  //7
-			                            "Already selected !",  //8
-			                            "Invalid selection !",  //9
-			                            "Error: nothing to select !",  //10
-			                            "Error: not yet selected !",  //11
-			                            "Nothing to delete !"   //12
-			                            };
+	
 	/**
 	 * Creates a model with no user values and a calculated
 	 * value of zero.
 	 * 
 	 */
-	public Model()
+	public Model(Expression<Double> expr)
 	{
 		stack = new  Stack<Action<Double>>();
 		format = new DisplayFormat(0.00);
 		selection = new SelectionState() ;
-		oprand = new OprandProcess() ;
-		
-		totalComputations = 0;
+		deleted = new  Stack<Action<Double>>();
+		 expressionType = expr;  // infix , postfix etc
+		 expressionMode = new ExpressionState();
+		 totalOprands = 0;
+		 totalComputations = 0;
+		 inserted = 0;
+		 
 	}
 
-	/**
-	 * Inserts an action into the stack
-	 * for further processing
-	 * @param entry The value of the entry
-	 */
 	public void insert(Double entry)
-	{  
-		System.out.println("inserting "+entry);
-		stack.push( new Action<Double>(entry,'0') );
-		oprand.update(1);
-	}
-
-	/**
-	 * Deletes an item from the stack
-	 * @return A string of the new expression
-	 */
-	public String delete()
-	{
-		// String result = "removed";
-		    
-		if(weight()>0) 
-		{
-			Stack<Action<Double>> selected;  
-				
-			if (!selection.on()) // not in selection state, so delete the top item
-			{
-				if(oprand.on()) oprand.update(-1);
-				else totalComputations-- ;
-				selected =  pull(span(),span());
-					    
-			}
-			else // selection state
-			{
-				selection.makeRange(span());
-		    	int deletionSpan = 0 - (selection.upperBound()-selection.lowerBound()+1) ;
-		    	    
-			    selected = pull(selection.lowerBound(),selection.upperBound());
-			    if(oprand.on()) oprand.update(deletionSpan);
-			    else totalComputations += deletionSpan ;
-			}
-			  
-			while( !selected.empty() ) selected.pop() ; // garbage collection	
-	           
-		}
-		else return "nothing to undo !"; 
+	{ 
+		format.reset(entry);
+		String str = format.format();
 		
-		selection.initialize();
-		return expression();
+		Action<Double> newEntry = new Action<Double>(entry,str,5,++totalOprands) ;
+		if(!deleted.empty()) newEntry.setPrevious(invert(deleted));  // invert is used here so that later its easier to push back in 
+			
+		stack.push( newEntry );
+		expressionMode.off();
+		inserted++;
+	}
+	
+	public String remove()  //  undo
+	{
+          if(size()==1)stack.pop();
+          else
+          {
+		    
+		   if((inserted==0) && !(deleted.empty())) {stack.push(deleted.pop());totalOprands++;return "removed";}
+		    if(size()>0) 
+		    {
+			   if (!selection.active())    // delete last item on stack
+				{
+					Action<Double> top =  stack.pop();
+					if(top.type()==OPRAND)totalOprands--;
+					else totalComputations--;
+					if(top.type()>1)  // not oprand
+					{
+						if(top.type()==COMPOUND)	
+						{
+							Action<Double> right =	top.remove();
+					    	right.setLeftOperator(0);
+							top.setValue(Double.parseDouble(top.getLocalValue()));
+							
+							
+							 if(top.type()==OPRAND)top.setPosition(stack.peek().position()+1);
+							 stack.push(top);
+							 if(right.position()!=-111)stack.push(right);
+							
+						}
+						else if(top.type()==COMPUTED)  
+						{
+							String[] trv = top.getOprands();
+							int previous ; // position of last oprand at last state
+							if(stack.peek().position()==0)previous = 0;
+							else previous = stack.peek().position();
+							for(int i = 0; i < trv.length; i++)stack.push(new Action<Double>(Double.parseDouble(trv[i]),trv[i],5,previous+i));
+							deleted.push(top);
+						}
+						
+					}
+					else  // oprand type
+					{
+						Stack<Action<Double>> previous = top.getPrevious();
+						while(!previous.empty()) stack.push(previous.pop());
+						deleted.push(top);  // think
+						
+					}
+					
+				}
+				else if(totalOprands>0)  // delete selected from current
+				   {
+					  Stack<Action<Double>> selected = pull(span());
+					  while( !selected.empty() ) selected.pop() ; // garbage collection	
+				   }
+			 
+		    }
+		    else return "nothing to undo !"; 
+          }
+		    selection.reset();
+		    
+		    inserted--;
+		    return expression(EXPAND);
+					
 	}
 	
 	
@@ -102,86 +134,81 @@ public class Model
 	{
 		while(!stack.empty())stack.pop() ;
 		
+		
+		selection.reset();
+		totalOprands = 0;
 		totalComputations = 0;
-		selection.initialize();
-		if(oprand.on())oprand.flip();
+		expressionMode.off();
 	}
+
 	
-	/**
-	 * Adds the calculated value by a user value.
-	 * 
-	 * @param userValue
-	 *            The value to add to the current calculated value.
-	 */
-	public Double add()
+	public void add()
 	{		
 		Stack<Double> selected, tmp  ;
-		
-		if(selection.on()){ selection.makeRange(span()); selected = pick(selection.lowerBound(),selection.upperBound()); }
-		else if( oprand.on() )  // current computation
-		{
-			int collections = oprand.getTotalOprands();
-			selected = new Stack<Double>();
-			if(collections==1)  // add with the previous result
-			{
-				Action<Double> top = stack.pop();
-				selected.push(top.getValue());
-			    if(!stack.empty())selected.push(stack.peek().getValue());
-			    stack.push(top);	
-			}
-			else selected = pick(1,collections); // oprands > 1, add em' up  //  CHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
-			    
-			    	
-			    
-		}
-		else//  last 2 results  && not selected
-		{
-			selected = pick(span()-1,span());
-		}
-		 
-		 
-		 // values captured , now do calculations
-		 
-		tmp = new Stack<Double>();
+		Action<Double> result ;  // result item to be pushed on stack
 		Double sum = 0.00;
-		while( !selected.empty() ){ sum +=  selected.peek() ;  tmp.push(selected.pop()) ; } 
-		 
-		Action<Double> result = new Action<Double>(sum,'+') ; 
-		Action<Double> newOprand = new Action<Double>(sum,'0') ; 
-		// System.out.println("Oprand = "+oprand.getTotalOprands());
-		 
-		if( oprand.on() &&   oprand.getTotalOprands()>1 )
-        {
-			if(selection.on())stack.push(newOprand);  // adding a new oprand to current computation
-	        else stack.push(result);  // current computation done
-        }
-		else    // insert new expression before inserting the result 
-		{
-			while( !tmp.empty() )selected.push(tmp.pop()) ;  
-			while( !selected.empty() )
-			{
-				newOprand = new Action<Double>(selected.pop(),'0') ;
-				stack.push(newOprand) ; 
-			}
-			stack.push(result);
-		}
-		 /*
-		 if(selection.on())stack.push(new Action<Double>(sum,'0'));  // new oprand for current computation
-		 else if(oprand.on() && oprand.getTotalOprands()>1) {System.out.println("result = "+result.getValue()); stack.push(result); }// result for current computation       
-	     else // add last 2 actions, insert new expression  before inserting the result 
-			{     
-				 while(!tmp.empty())selected.push(tmp.pop()); 
-				 while(!selected.empty())stack.push( new Action<Double>(selected.pop(),'0') );
-				 stack.push(result);
-			}  */
-		 
-		  
-		if(oprand.on())oprand.flip();
-		selection.initialize();
-		totalComputations++;
-		System.out.println("adding");
 		
-		return sum;
+		 if( selection.active() ) // add selected
+		 { 
+			 System.out.println("span = "+span());
+			 selected = pick(span()); 
+			 tmp = new Stack<Double>();
+			 
+			 while( !selected.empty() )
+			 { sum +=  selected.peek() ;  tmp.push(selected.pop()) ; }
+			 
+			 format.reset(sum);
+			 String formattedSum = format.format() ;
+			 result = new Action<Double>(sum, formattedSum ,5,++totalOprands) ; // new oprand to be added
+			 
+			  
+			 stack.push(result);
+			 selection.reset();		 
+		 }
+		 else   //  add last 2 
+			{
+			 
+			    Action<Double> top = stack.pop();
+			    sum += top.getValue() ;
+			    if(stack.empty()) // had only 1 item so add it with 0
+			    {	
+		           result = new Action<Double>(0.0,"0",5,-111);  
+		 		  
+		 		   result.merge(top,1,sum);
+		 		 
+			    }	
+			    else 
+			    {
+			    	
+			    	      result = stack.pop();
+				    	  sum += result.getValue() ;
+				    	  
+				    	  if(top.type()==OPRAND && result.type()==OPRAND)  // add only oprands
+			    	      {
+				    		  // System.out.println("here2ya");
+			    	    	   String[] tp = top.getOprands();
+			    	    	   String[] rs = result.getOprands();
+			    	    	   int size1 = rs.length ;
+			    	    	   int size2 = tp.length ;
+			    	    	   String[] opr = new String[size1+size2];
+			    	    	   for(int i = 0; i < size1; i++) opr[i] = rs[i];
+			    	    	   for(int i = 0; i < size2; i++) opr[i+size1] = tp[i];
+			    	    	   format.reset(sum);
+			    			   
+			    	    	   result = new Action<Double>(sum,format.format(),1,0);
+			    	    	   result.setOprands(opr);
+			    	      }
+				    	  else  result.merge(top,1,sum); 
+			    	      
+			    	      
+			    }
+			    stack.push(result);
+	    	    totalComputations++;
+	    	    totalOprands = 0; 
+			    	    	
+			}
+		 expressionMode.off();
+		 
 	}
 	
 	/**
@@ -190,121 +217,84 @@ public class Model
 	 * @param userValue
 	 *            The value to subtract from the current calculated value by.
 	 */
-	public Double subtract()
+	public void subtract()
 	{
+		
 		Stack<Double> selected, tmp  ;
+		Action<Double> result ;  // result item to be pushed on stack
+		Double sub;
 		
-		 
-		if(selection.on()){ selection.makeRange(span()); selected = pick(selection.lowerBound(),selection.upperBound()); }
-		else if( oprand.on() )  // current computation
-		{
-			int collections = oprand.getTotalOprands();
-			selected = new Stack<Double>();
-			if(collections==1)  // add with the previous result
-			{
-				Action<Double> top = stack.pop();
-			    selected.push(top.getValue());
-			    if(!stack.empty())selected.push(stack.peek().getValue());
-			    stack.push(top);
-			}
-			else selected = pick(1,collections); // oprands > 1, add em' up  //  CHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
-			    
-			    	
-			    
-		}
-		else//  last 2 results  && not selected
-		{
-			selected = pick(span()-1,span());
-		}
-		
-		 // values captured , now do calculations
-		 
-		tmp = new Stack<Double>();
-		tmp.push(selected.pop()) ;
-		Double sub = tmp.peek();
-		
-		while( !selected.empty() ){ sub -=  selected.peek() ;  tmp.push(selected.pop()) ; }
-		 
-		 
-		Action<Double> result = new Action<Double>(sub,'-') ; 
-		Action<Double> newOprand = new Action<Double>(sub,'0') ; 
-		// System.out.println("Oprand = "+oprand.getTotalOprands());
-		 
-		if( oprand.on() &&   oprand.getTotalOprands()>1 )
-        {
-			if(selection.on())stack.push(newOprand);  // adding a new oprand to current computation
-	        else stack.push(result);  // current computation done
-        }
-		else    // insert new expression  before inserting the result 
-		{
-			while( !tmp.empty() )selected.push(tmp.pop()) ;  
-			while( !selected.empty() )
-			{ 
-				newOprand = new Action<Double>(selected.pop(),'0') ;
-				stack.push(newOprand) ; 
-			}
-			stack.push(result);
-		}
-		
-		if(oprand.on())oprand.flip();
-		selection.initialize();
-		totalComputations++;
-		System.out.println("adding");
-		
-		return sub;
-		
-		/* Stack<Double> selected  ;
-		int currentSize = weight();
-		
-		
-		 selection.makeRange(currentSize);
-		 if(selection.on()) selected = pick(selection.lowerBound(),selection.upperBound());
-		 else if( oprand.on() )  // current computation
-			 {  
-			    int collections = oprand.getTotalOprands();
-			    selected = new Stack<Double>();
-			    if(collections==1)  // add with the previous result
-			    {
-			    	Action<Double> top = stack.pop();
-			    	selected.push(top.getValue());
-			    	if(!stack.empty())selected.push(stack.peek().getValue());
-			    	stack.push(top);
-			    	
-			    }
-			    else // oprands > 1, add em' up
-			    {
-			    	selection.setBounds(1,collections);
-			    	selected = pick(selection.lowerBound(),selection.upperBound());
-			    }
-			    	
-			    
-			 }
-		 else// add last 2 results
+		 if( selection.active() ) // add selected
+		 { 
+		     selected = pick(span()); 
+			 tmp = new Stack<Double>();
+			 tmp.push(selected.pop()) ;
+			 sub = tmp.peek();
+			 
+			 while( !selected.empty() ){ sub -=  selected.peek() ;  tmp.push(selected.pop()) ; }
+			 format.reset(sub);
+			 result = new Action<Double>(sub,format.format(),5,++totalOprands) ; 
+			 
+			 String[] opr = new String[tmp.size()];
+			 while(!tmp.empty())
 			 {
-			    selected = new Stack<Double>();
-			    Action<Double> top = stack.pop();
-		    	selected.push(top.getValue());
-		    	if(!stack.empty())selected.push(stack.peek().getValue());
-		    	stack.push(top);
+			   format.reset(tmp.pop());
+			   opr[tmp.size()] = format.format();
 			 }
-		 
-		 
-		 
+			 result.setOprands(opr);
+			 
+			 
+			 stack.push(result);
+			 selection.reset();		 
+		 }
+		 else   //  last 2 
+			{
+			
+			    Action<Double> top = stack.pop();
+			    
+			    if(stack.empty()) // had only 1 item so subtract  it from 0
+			    {	
+		           result = new Action<Double>(0.0,"0",5,-111);  //test
+		 		   
+		 		   result.merge(top,2,0-top.getValue());
+		 		   
+			    }	
+			    else 	 // empty at this point would mean add to zero 
+			    {
+			    	
+			    	      result = stack.pop();
+				    	  sub = result.getValue() - top.getValue() ;
+			    	      
+				    	  if(top.type()==OPRAND && result.type()==OPRAND)  // add only oprands
+			    	      {
+			    	    	   String[] tp = top.getOprands();
+			    	    	   String[] rs = result.getOprands();
+			    	    	   int size1 = rs.length ;
+			    	    	   int size2 = tp.length ;
+			    	    	   String[] opr = new String[size1+size2];
+			    	    	   for(int i = 0; i < size1; i++) opr[i] = rs[i];
+			    	    	   for(int i = 0; i < size2; i++) opr[i+size1] = tp[i];
+			    	    	   format.reset(sub);
+			    			   
+			    	    	   result = new Action<Double>(sub,format.format(),2,0);
+			    	    	   result.setOprands(opr);
+			    	      }
+				    	  else result.merge(top,2,sub);  
+				        
+			    }
+			    
+			    stack.push(result);
+	    	    totalComputations++;
+	    	    totalOprands = 0;  	
+			    	    	
+			}
+		 expressionMode.off();
 		
-		 Double sub = selected.pop();
-		 while( !selected.empty() ) sub -= selected.pop() ;
-		 
-		 if(oprand.on())stack.push(new Action<Double>(sub,'0'));  // entry for current computation
-		 else stack.push( new Action<Double>(sub,'-') ); 
-		 
-		 oprand.flip();
-			selection.initialize();
-			totalComputations++;
-		 // format.reset(sub);
-		 // result = format.format();  
-		System.out.println("subtracting");
-		return sub;  */
-
+		
+		
+		
+		
+		
 	}
 	
 	/**
@@ -313,115 +303,72 @@ public class Model
 	 * @param userValue
 	 *            The value to multiply the current calculated value by.
 	 */
-	public Double multiply()
+	public void multiply()
 	{
 		Stack<Double> selected, tmp  ;
-		
-		if(selection.on()){ selection.makeRange(span()); selected = pick(selection.lowerBound(),selection.upperBound()); }
-		else if( oprand.on() )  // current computation
-		{
-			int collections = oprand.getTotalOprands();
-			selected = new Stack<Double>();
-			if(collections==1)  // add with the previous result
-			{
-				Action<Double> top = stack.pop();
-			    selected.push(top.getValue());
-			    if(!stack.empty())selected.push(stack.peek().getValue());
-			    stack.push(top);	
-			}
-			else selected = pick(1,collections); // oprands > 1, add em' up  //  CHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
-	    
-		}
-		else//  last 2 results  && not selected
-		{
-			selected = pick(span()-1,span());
-		}
-		 
-		 
-		 // values captured , now do calculations
-		 
-		tmp = new Stack<Double>();
+		Action<Double> result ;  // result item to be pushed on stack
 		Double mult = 1.00;
-		while( !selected.empty() ){ mult *=  selected.peek() ;  tmp.push(selected.pop()) ; } 
-		 
-		Action<Double> result = new Action<Double>(mult,'x') ; 
-		Action<Double> newOprand = new Action<Double>(mult,'0') ; 
-		 // System.out.println("Oprand = "+oprand.getTotalOprands());
-		 
-		if( oprand.on() &&   oprand.getTotalOprands()>1 )
-        {
-	         if(selection.on())stack.push(newOprand);  // adding a new oprand to current computation
-	         else stack.push(result);  // current computation done
-        }
-		else    // insert new expression  before inserting the result 
-		{
-			while( !tmp.empty() )selected.push(tmp.pop()) ;  
-			while( !selected.empty() )
-			{ 
-				newOprand = new Action<Double>(selected.pop(),'0') ;
-				stack.push(newOprand) ; 
-			}
-			stack.push(result);
-		}
-		 
-		if(oprand.on())oprand.flip();
-		selection.initialize();
-		totalComputations++;
-		System.out.println("adding");
 		
-		return mult;
-		
-		/*Stack<Double> selected  ;
-		int currentSize = weight();
-		
-		
-		 selection.makeRange(currentSize);
-		 if(selection.on()) selected = pick(selection.lowerBound(),selection.upperBound());
-		 else if( oprand.on() )  // current computation
-			 {  
-			    int collections = oprand.getTotalOprands();
-			    selected = new Stack<Double>();
-			    if(collections==1)  // add with the previous result
-			    {
-			    	Action<Double> top = stack.pop();
-			    	selected.push(top.getValue());
-			    	if(!stack.empty())selected.push(stack.peek().getValue());
-			    	stack.push(top);
-			    	
-			    }
-			    else // oprands > 1, add em' up
-			    {
-			    	selection.setBounds(1,collections);
-			    	selected = pick(selection.lowerBound(),selection.upperBound());
-			    }
-			    	
-			    
-			 }
-		 else// add last 2 results
-			 {
-			    selected = new Stack<Double>();
+		 if( selection.active() ) // add selected
+		 { 
+			 selected = pick(span()); 
+			 tmp = new Stack<Double>();
+			 //System.out.println("here1ya");
+			 while( !selected.empty() )
+			 { mult *=  selected.peek() ;  tmp.push(selected.pop()) ; }
+			 
+			 format.reset(mult);
+			 String formattedMult = format.format() ;
+			 result = new Action<Double>(mult, formattedMult ,5,++totalOprands) ; // new oprand to be added
+			 
+			 
+			 stack.push(result);
+			 selection.reset();		 
+		 }
+		 else   //  add last 2 
+			{
+			   
 			    Action<Double> top = stack.pop();
-		    	selected.push(top.getValue());
-		    	if(!stack.empty())selected.push(stack.peek().getValue());
-		    	stack.push(top);
-			 }
-		 
-		 
-		 // else if( totalOprands >= 0 && totalOprands<3)selected = pull((currentSize-1),currentSize) ; // <=2 -> last 2
-		 // else if (totalOprands>2) selected = pull((currentSize-totalOprands+1),currentSize) ;
-		
-		 Double mult = 1.00;
-		 while( !selected.empty() ) mult *= selected.pop() ;
-		 if(oprand.on())stack.push(new Action<Double>(mult,'0'));  // entry for current computation
-		 else stack.push( new Action<Double>(mult,'*') );     
-		 format.reset(mult);
-		 // result = format.format(); 
-		   // System.out.println("adding");
-		 oprand.flip();
-			selection.initialize();
-			totalComputations++;
-		return mult; */
-		
+			    mult *= top.getValue() ;
+			    
+			    if(stack.empty()) // had only 1 item so add it with 0
+			    {	
+		           result = new Action<Double>(1.0,"1",5,-111);  //test
+		 		   
+		 		   result.merge(top,3,mult);
+		 		 
+			    }	
+			    else // empty at this point would mean add to zero 
+			    {
+			    	
+			    	      result = stack.pop();
+				    	  mult *= result.getValue() ;
+				    	  if(top.type()==OPRAND && result.type()==OPRAND)  // add only oprands
+			    	      {
+			    	    	   String[] tp = top.getOprands();
+			    	    	   String[] rs = result.getOprands();
+			    	    	   int size1 = rs.length ;
+			    	    	   int size2 = tp.length ;
+			    	    	   String[] opr = new String[size1+size2];
+			    	    	   for(int i = 0; i < size1; i++) opr[i] = rs[i];
+			    	    	   for(int i = 0; i < size2; i++) opr[i+size1] = tp[i];
+			    	    	   format.reset(mult);
+			    			   
+			    	    	   result = new Action<Double>(mult,format.format(),3,0);
+			    	    	   result.setOprands(opr);
+			    	      }
+				    	  else result.merge(top,3,mult);  
+				    	  
+				    	 
+			    	      
+			    	      
+			    }
+			    stack.push(result);
+	    	      totalComputations++;
+	    	      totalOprands = 0;
+			    	    	
+			}
+		 expressionMode.off();
 		
 		
 	}
@@ -436,515 +383,361 @@ public class Model
 	public String divide()
 	{
 		Stack<Double> selected, tmp  ;
-		
-		if(selection.on()){ selection.makeRange(span()); selected = pick(selection.lowerBound(),selection.upperBound()); }
-		else if( oprand.on() )  // current computation
-		{
-			int collections = oprand.getTotalOprands();
-			selected = new Stack<Double>();
-			if(collections==1)  // add with the previous result
-			{
-				Action<Double> top = stack.pop();
-			    selected.push(top.getValue());
-			    if(!stack.empty())selected.push(stack.peek().getValue());
-			    stack.push(top);
-			}
-			else selected = pick(1,collections); // oprands > 1, add em' up  //  CHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH
-			    
-		}
-		else//  last 2 results  && not selected
-		{
-			selected = pick(span()-1,span());
-		}
-		 
-		 
-		 // values captured , now do calculations
-		 
-		tmp = new Stack<Double>();
-		tmp.push(selected.pop()) ;
-		Double divident = tmp.peek();
-		Double divisor ;
-		while( !selected.empty() )
-		{
-			divisor = selected.peek() ; tmp.push( selected.pop() ) ;
-			if (divisor == 0.00) return "oops ! division by zero !!!"; 
-			else divident /= divisor; 
-		}
-			
-		Action<Double> result = new Action<Double>(divident,'/') ; 
-		Action<Double> newOprand = new Action<Double>(divident,'0') ; 
-		// System.out.println("Oprand = "+oprand.getTotalOprands());
-		 
-		 if( oprand.on() &&   oprand.getTotalOprands()>1 )
-         {
-	         if(selection.on())stack.push(newOprand);  // adding a new oprand to current computation
-	         else stack.push(result);  // current computation done
-         }
-		 else    // insert new expression  before inserting the result 
-		 {
-			 while( !tmp.empty() )selected.push(tmp.pop()) ;  
-			 while( !selected.empty() )
-			 { 
-				 newOprand = new Action<Double>(selected.pop(),'0') ;
-				 stack.push(newOprand) ; 
-			 }
-			 stack.push(result);
-		 }
-		 
-		 
-		  
-		 format.reset(divident);
-		 if(oprand.on())oprand.flip();
-		 selection.initialize();
-		 totalComputations++;
-		 
-		 return format.format(); 
+		Action<Double> result ;  // result item to be pushed on stack
+		Double divident,divisor;
 		
 		
 		
-		/* Stack<Double> selected  ;
-		int currentSize = weight();
-		
-		
-		 selection.makeRange(currentSize);
-		 if(selection.on()) selected = pick(selection.lowerBound(),selection.upperBound());
-		 else if( oprand.on() )  // current computation
-			 {  
-			    int collections = oprand.getTotalOprands();
-			    selected = new Stack<Double>();
-			    if(collections==1)  // add with the previous result
-			    {
-			    	Action<Double> top = stack.pop();
-			    	selected.push(top.getValue());
-			    	if(!stack.empty())selected.push(stack.peek().getValue());
-			    	stack.push(top);
-			    	
-			    }
-			    else // oprands > 1, add em' up
-			    {
-			    	selection.setBounds(1,collections);
-			    	selected = pick(selection.lowerBound(),selection.upperBound());
-			    }
-			    	
-			    
-			 }
-		 else// add last 2 results
-			 {
-			    selected = new Stack<Double>();
-			    Action<Double> top = stack.pop();
-		    	selected.push(top.getValue());
-		    	if(!stack.empty())selected.push(stack.peek().getValue());
-		    	stack.push(top);
-			 }
-		 
-		 
-		 Double divident = selected.pop();
-		 Double divisor ;
-		 while( !selected.empty() )
-			 { divisor = selected.pop() ;
-			   if (divisor == 0.00) return "oops ! division by zero !!!"; 
-			   else divident /= divisor;  // ignores zero divisor
-			 }
+		 if( selection.active() ) // add selected
+		 { 
 			 
-		 if(oprand.on())stack.push(new Action<Double>(divident,'0'));  // entry for current computation
-		 else    stack.push(new Action<Double>(divident,'/'));     
-		 format.reset(divident);
-		 if(oprand.on())oprand.flip();
-			selection.initialize();
-			totalComputations++;
-		 return format.format();  */		 
+            selected = pick(span()); 
+			 
+			 tmp = new Stack<Double>();
+			 tmp.push(selected.pop()) ;
+			 divident = tmp.peek();
+			 
+			 while( !selected.empty() )
+		     {    
+				   divisor = selected.peek() ; tmp.push( selected.pop() ) ;
+				   if (divisor == 0.00) return "oops, division by zero !"; 
+				   else divident /= divisor; 
+			 }
+			 		 
+			 format.reset(divident);
+			 result = new Action<Double>(divident,format.format(),5,++totalOprands) ; 
+			 
+			 String[] opr = new String[tmp.size()];
+			 while(!tmp.empty())
+			 {
+			   format.reset(tmp.pop());
+			   opr[tmp.size()] = format.format();
+			 }
+			 result.setOprands(opr);
+			 stack.push(result);
+			 selection.reset();	
+				 
+		 }
+		 else   //  add last 2 
+			{
+
+			    Action<Double> top = stack.pop();
+			    divisor = top.getValue() ;
+			    if(divisor==0)return "oops, division by zero !";
+			    if(stack.empty()) // had only one element b4 pop up
+			    {
+			    	   result = new Action<Double>(0.0,"0",5,-111);
+			 		   
+			 		   result.merge(top,4,0.00);  
+			 		   stack.push(result);
+			 		   totalComputations++;
+		    	       totalOprands = 0;
+			    }
+			    else 
+			    {
+		
+			    	result = stack.pop();
+			    	divident = result.getValue() / divisor ;
+			    	
+			    	if(top.type()==OPRAND && result.type()==OPRAND)  // add only oprands
+		    	      {
+		    	    	   String[] tp = top.getOprands();
+		    	    	   String[] rs = result.getOprands();
+		    	    	   int size1 = rs.length ;
+		    	    	   int size2 = tp.length ;
+		    	    	   String[] opr = new String[size1+size2];
+		    	    	   for(int i = 0; i < size1; i++) opr[i] = rs[i];
+		    	    	   for(int i = 0; i < size2; i++) opr[i+size1] = tp[i];
+		    	    	   format.reset(divident);
+		    			   
+		    	    	   result = new Action<Double>(divident,format.format(),4,0);
+		    	    	   result.setOprands(opr);
+		    	      }
+			    	  else result.merge(top,4,divident);    
+			    	
+			    	
+		    	      stack.push(result);
+		    	      totalComputations++;
+		    	      totalOprands = 0;
+			    }
+			   	
+			}
+		 expressionMode.off();
+		
+		return "done";
+		 
 		
 	}
 	
-	/**
-	 * Performs the calculation for sin
-	 * @param degree The angle
-	 * @return The sin of the anlge
-	 */
 	public double sin(int degree)
 	{
+		expressionMode.off();
 		return Math.sin(radian(degree)) ;
+		 
 	}
 	
-	/**
-	 * Performs the calculation for cos
-	 * @param degree The angle
-	 * @return The cos of the angle
-	 */
 	public double cos(int degree)
 	{
+		expressionMode.off();
 		return Math.cos(radian(degree)) ;
+		
 	}
 	
-	/**
-	 * Calculates the factorial
-	 * @param n The number to take the factorial of
-	 * @return The factorial
-	 */
-	public static int factorial(int n) 
+	public int factorial(int n) 
 	{
+		expressionMode.off();
 	    return (n <= 1) ? 1 : n*factorial(n-1);
 	}
 	
-	/**
-	 * Convert degrees to radians
-	 * @param deg The angle in degrees
-	 * @return The angle in radians
-	 */
 	public double radian(int deg)
     {
-        return ((2*Math.PI)/360.0) * deg;
+		expressionMode.off();
+		return ((2*Math.PI)/360.0) * deg;
     }
 	
-	/**
-	 * 	Builds a mathematical expression based on user input
-	 *  that can be displayed in a nice way
-	 * @return The expression to display
-	 */
-	public String expression()
-	{
-		String result = "" ;
-		if(weight()==0) return "Start new computation | value = 0" ;
-		else
-			{
-			   // boolean complete;
-			   Stack<Action<Double>> tmp = new  Stack<Action<Double>>();
-			   String  val , op;  
-			   Action<Double> top =  stack.pop() ;
-			   
-			   format.reset( top.getValue() ); 
-			   val = format.format();
-			   //format.reset( tmp.peek().getValue() ); val = format.format();
-			   // result = tmp.peek().
-			   if(top.getOperator()=='0') op=",";
-			   else   op=""+top.getOperator();
-			   
-			   while ( !stack.empty() && (stack.peek().getOperator()=='0') )tmp.push(stack.pop());
-			   while(!tmp.empty())
-				   { 
-				      format.reset( tmp.peek().getValue() ); result += format.format(); 
-				      
-				      stack.push(tmp.pop());
-				      if(  !(tmp.empty() && !op.equalsIgnoreCase(","))  ) result+=op;
-				     
-				   }
-			   if(top.getOperator()=='0') result =  "[ " +result +val + " ]" ;
-			   else result = "( " + result + " )" ;
-			   stack.push(top);
-			   result += "  | value = "+val;
-			}
-		
-		return result;
-		
-	}
 	
-	/**
-	 * Get the current calculated value.
-	 * 
-	 * @return The current calculated value.
-	 
-	public void setCommunicator(Controller control)
-	{
-		communicator = control;
-	}*/
+
+	public void select(String inp)
+	{		
+		 if(occurance(inp,".")==0)
+		    {
+		    	int index = Integer.parseInt(inp);
+		    	selection.add(index,index);
+		    }
+		    else
+		    {	       
+		       StringTokenizer tokens = new StringTokenizer(inp,".");
+			   String lower = tokens.nextToken();
+			   String higher = tokens.nextToken();
+			   selection.add(Integer.parseInt(lower),Integer.parseInt(higher));		 
+		    }	    
+		selection.on();
+	    expressionMode.off();
+    }
 	
-	/* public String negate()
+
+	private Stack<Action<Double>> pull(int range)  // extract desired elements from stack,an item is desired either if its selected or its in specified range
 	{
-	    if(selection.on() && !oprand.on()) return "Must not negate past results !";
-		 // if (!mode.isDefaultMode()) return "Error: not selected!" ;
-		 mode.evaluate(weight());
-		String  result = modify(mode.lowerBound(),mode.upperBound(),false);
-		
-		return result ;    
-		  
-	}  */
-	
-	public String select(int bound)
-	{
-	  if(weight()==0)return errorMsg[10]  ;
-	  if(selection.on())
-	  {
-	    if(Math.abs(bound)>weight()) 
-	                    return errorMsg[7] ; 
-	    else if(selection.currentFill()==2)
-                        return errorMsg[8]  ;
-        else if(selection.lowerBound()<0 ) // dont allow -ve in double bound selection
-        return errorMsg[9]  ; 
-                                            
-	  }
-      if (bound == 0 && !oprand.on())selection.setBounds(1,totalComputations); // pick all results
-      else if(bound == 0 && oprand.on())selection.setBounds(1,oprand.getTotalOprands());  // pick all from current computation
-	  else selection.put(bound);
-	  
-      return "selected" ;
-	  
-     }
-	
-	/**
-	 * Checks if a value of a chosen element is in the stack
-	 * @return
-	 */
-	public String check()  // can check the value of a chosen elemet in stack
-	{
-		
-		String phase;
-		  int index;
-		  String value ;
-		if( selection.on()  )  // can only check past results since you can see expression of current computation
-		{		   		   
-		   // int index = -1;
-		   selection.makeRange(span());
-		   // Double  value ;
-		   
-	       if ( (selection.currentFill()==2)&& (selection.upperBound()!=selection.lowerBound()) ) return errorMsg[1];
-	    	   
-	      /* else   // fill==1
-	       {System.out.println("here2 = ");
-	    	   if (mode.upperBound()==size)  index = mode.lowerBound()  ;
-	           else if (mode.lowerBound()==1)  index = mode.upperBound();
-	       } */
-	       // System.out.println(" value selected = "+index);
-	       index = selection.lowerBound();
-	       format.reset( (pick(index,index)).peek()  );
-	       value = format.format();
-	       
-	       
-		}
-		
-		else // show last one
-			{
-			  
-			  if(oprand.on()) index=oprand.getTotalOprands();
-			  else index = totalComputations; 
-			  format.reset( stack.peek().getValue()  );
-		      value = format.format();
-			}
-		if (oprand.on())phase = "current" ;
-	       else phase = "history" ;
-		selection.initialize();	
-		return value+" @ "+index+" in "+phase;
-	}  
-	
-	
-	/**
-	 * Extracts selected element from stack
-	 * @param bottom The top elements index
-	 * @param top The bottom elements index
-	 * @return A stack from bottom to top index
-	 */
-	protected Stack<Action<Double>> pull(int bottom, int top)  // extract selected elements from stack
-	{
-		
-		
 		
 		Stack<Action<Double>> result = new  Stack<Action<Double>>(); // selected
-		Stack<Action<Double>> tmp = new  Stack<Action<Double>>(); // selected
-		int distance = span();
-		System.out.println("pull --> bottom = "+bottom+" top = "+top+" distancs = "+distance);
-		 if(oprand.on())  // pick from  current computation	    	
-		    {
-			  
-			   while(distance>=bottom)
-			   { 
-				   
-				   if(distance>=bottom && distance<=top){System.out.println("pulling :  "+stack.peek().getValue()); result.push(stack.pop()); }
-				   else tmp.push(stack.pop());
-				   
-	   
-				   distance-- ;
-	    		    
-	    	   }
-			 
-			  
-		    }
-		    else // pick from previous results
-		    {
-		    	 ++distance ;   
-				   while(distance>=bottom && !stack.empty())
-				   { 
-		    		    
-					   tmp.push(stack.pop());
-					   
-					   
-					   if(tmp.peek().getOperator()!='0')  --distance;
-						   
-					   
-					   if(distance>=bottom && distance<=top) result.push(tmp.pop());
-	
-		    	   }
+		Stack<Action<Double>> tmp = new  Stack<Action<Double>>(); 
 		
-		    }
-		 while(!tmp.empty()) stack.push(tmp.pop());
-			return result;
+		
+		while(range>0)
+		{
+			if(!selection.active())result.push(stack.pop());
+			else if( selection.selected( stack.peek().position() ) )
+				{
+				  result.push(stack.pop());
+				  if(result.peek().position()==0) totalComputations--;
+				}
+			else tmp.push(stack.pop());
+			range--;
+		}
+		totalOprands = 0;
+		while(!tmp.empty())
+		{
+			tmp.peek().setPosition(++totalOprands);  // update index of existing oprands
+			stack.push(tmp.pop());
+		}
 			
-		
+		return result;
 		
 	}  
 	
 	
-	/**
-	 * Returns a stack with the values that the user
-	 * has entered
-	 * @param bottom Bottom of stack 
-	 * @param top
-	 * @return
-	 */
-	 protected Stack<Double> pick(int bottom, int top)  // return the values of selected items in stack 
+	
+	 private Stack<Double> pick(int range)  // dont extract but return the values of desired items in stack , an item is desired either if its selected or its in specified range
 		{
-			System.out.println("pick --> bottom = "+bottom+" top = "+top);
-		    Stack<Double> result = new Stack<Double>();
-			
-			
-			Stack<Action<Double>> tmp = new  Stack<Action<Double>>(); // selected
-			int distance = span();
-			 if(oprand.on())  // pick from  current computation	    	
-			    {
-				  
-				   while(distance>=bottom)
-				   { 
-		    		    
-					   tmp.push(stack.pop());
-					   
-				       if(distance>=bottom && distance<=top) result.push(tmp.peek().getValue());
-						    
-					   distance-- ;
-		    		    
-		    	   }
-				 
-				  
-			    }
-			    else // pick from previous results
-			    {
-			    	   while(distance>=bottom)
-					   { 
-			    		    
-						   tmp.push(stack.pop());
-						  
-						   if(tmp.peek().getOperator()!='0') 
-						   { 
-							  
-							   if(distance>=bottom && distance<=top) result.push(tmp.peek().getValue());
-							   distance--;
-							   
-						   }
-			    		 
-			    	   }
-					   
-					   
-					
-					   
-			    }
-			 while(!tmp.empty()) stack.push(tmp.pop());
-			return result;
-				
+		
+		 Stack<Double> result = new Stack<Double>();
+	     Stack<Action<Double>> tmp = new  Stack<Action<Double>>(); 
+	     
+		 boolean current = (totalOprands>0);
+	     
+	     if(selection.active())  // pick from selected items
+		 {
+			 while(range>0)
+			   { 	
+				 System.out.println("range = "+range);
+				   tmp.push(stack.pop());
+				       
+					     if(current)  // from oprands
+				         {	    	   
+					       if(selection.selected( range )) result.push(tmp.peek().getValue());
+				    	   range--;
+				         } 
+					     else if(  tmp.peek().type()>1  )    // dont add if its from history but this item not computed
+					       {
+					    	   if(selection.selected( range ))result.push(tmp.peek().getValue());
+					           range--;
+					       }			  	    		    
+	    	   }
+		 }
+		 else  // pick last x items such that x = range
+		 {
+			 while(range>0)
+			 { 		    		    
+				   tmp.push(stack.pop());
+				   
+				   if(current)
+				   {
+					   result.push(tmp.peek().getValue());
+				       range--;   
+				   }
+				   else if(tmp.peek().type()>1)   // from history
+					   {
+					       result.push(tmp.peek().getValue());
+					       range--;
+					   }
+	    	 } 
+		 }
+		 
+		 while(!tmp.empty()) stack.push(tmp.pop());
+		 return result; 
+		 	
 		}
+	  
 	 
-	 /**
-	  * Negates an element on the stack
-	  * @return The negated element as a string
-	  */
-	 public String negate()
+	 public String negate()  // can negate only from current oprands 
 	 {
-			 String result = "changed";
-		      
-		     if (!selection.on()) return "Not selected !" ;
-		     
-			 if(!oprand.on()) return "May not modify history !" ;
+		    
+			 if(totalOprands<1) return "May not modify history !" ;
 			 
-		     selection.makeRange( oprand.getTotalOprands() );
-		     
-		     Stack<Action<Double>> change = pull(selection.lowerBound(),selection.upperBound());
-		     Stack<Action<Double>> temp = new  Stack<Action<Double>>();
-		     Stack<Action<Double>> tmp = new  Stack<Action<Double>>();
-		     
-		     int traverse = span();
-		     int top = selection.upperBound(); 
-		     while (traverse > top) { temp.push(stack.pop()); traverse--; }
-		     while( !change.empty() )  tmp.push( new Action<Double>( (change.pop().getValue() * (-1)) , '0') );
-		     while( !tmp.empty() )  temp.push( tmp.pop() );
-		     while( !temp.empty() )  stack.push( temp.pop() );
-	    	  	     	  
-		     selection.initialize();	 
-		     
-			return result ;    
+			if(selection.active())
+			{
+			  Stack<Action<Double>> tmp = new  Stack<Action<Double>>(); 
+			  int range = totalOprands;	
+				
+				while(range>0)
+				{
+					tmp.push(stack.pop());
+					if( selection.selected( tmp.peek().position()  ) )
+						{
+						   Double v = -1.00 ;
+						   v *= tmp.peek().getValue();
+						   tmp.peek().setValue(v) ;    // check
+						   
+						}
+					
+					range--;
+				}
+				
+				while(!tmp.empty())	stack.push(tmp.pop());
+			
+				selection.reset();
+			}
+			else 
+			{
+				   Double v = -1.00 ;
+				   v *= stack.peek().getValue();
+				   stack.peek().setValue(v) ;    	
+			}
+			expressionMode.off();
+			return "changed";    
 			  
 	 }
+	 public String expression(int mode)
+		{
+			String result = "" ;
+
+			if(size()==0) return " 0 | Start new computation" ;
+			
+				   
+				   format.reset( stack.peek().getValue() ); 
+				   String value = format.format();
+				   
+				   if(totalOprands>0)  // show the current entries yet to be computated
+				   {
+					   Stack<Double>  tmp = pick(totalOprands);
+					   int size = tmp.size();
+					   String[] trv = new String[size];
+						 while(!tmp.empty())
+						 {
+						   format.reset(tmp.pop());
+						   trv[tmp.size()] = format.format();  // putting in left - right order
+						    
+						 }
+						result =  trv[0];
+					    for(int i = 1; i < trv.length; i++) result += ","+trv[i];
+					    
+				   }
+				   else   // show last computation
+				   {
+					  
+					   expressionMode.on();  // expand mode
+					  if(mode==COMPRESS)expressionMode.change(COMPRESS);  // change it to compress mode
+					  System.out.println("expression() :");
+					 
+					  if(expressionMode.currentMode()==EXPAND) result = expressionType.express(stack.peek(),true );
+					  else result = expressionType.express(stack.peek(),false );
+					 
+				   }
+				   
+			  return  (value + " | " + result) ;
+		}
+	 public String state()
+	 {
+		 String result;
+		 if(expressionMode.active())result = expression(changeExpression());			 
+		 else
+		 {
+			if(totalOprands>0) result = "current oprands = "+span();
+			else result = "total computations = "+span();
+		 }
+		 return result;
+	 }
+	 private int changeExpression()
+	    {   		
+	      return ( (expressionMode.currentMode()+1)%2 );
+	    }
 	 
-	/* private void modify(int bottom, int top, int operator)  // modify elements from current 
-		{   System.out.println("modify --> bottom = "+bottom+" top = "+top);
-		     Stack<Action<Double>> tmp = new  Stack<Action<Double>>();
-			
-			
-			
-			
-			//System.out.println("modifying2");
-			// System.out.println("weight() = "+ weight()+" (bot, top) = ["+bottom+","+top+"]");
-			while(weight()>top) tmp.push(stack.pop());
-			// System.out.println("modifying3");
-			
-			
-			// if (bottom==top) {chosen = stack.pop()* (-1); stack.push(chosen); }
-			while(weight()>=bottom)
-			{ 
-				Double oldValue = stack.peek().getValue();
-				stack.peek().setValue(oldValue*(-1));   
-				tmp.push( stack.pop() );
-		    }
-					         
-			while( !tmp.empty() )  stack.push( tmp.pop() );
-			
-			
-	        selection.initialize() ;
-	        
-			
-		}  */
+	 private int occurance(String word, String character )
+	 {
+	 		return  word.length() - word.replace(character, "").length();		
+	 }
 	 
-	
-	 /**
-	  * Gets the stacks size
-	  * @return The stack size
-	  */
-	 public int weight()
+	  	
+	 	
+	 public int size()
      {
 		return stack.size();	
 	 }
 	 
-	 /**
-	  * Math constant pi
-	  * @return pi
-	  */
 	 public double pi()
      {
+		 expressionMode.off();
 	    return PI ;		
 	 }
 	 
-	 /**
-	  * How far along the stack an operator
-	  * should be applied to
-	  * @return
-	  */
-	 private int span()  // how far the operator to be applied, within current computation or accross history-list
+	 private int span()  // maximum distance/range to search for desired items in stack  
      {
-		if(oprand.on()) return oprand.getTotalOprands();
-		
-		return totalComputations;
+		 if(totalOprands>0) return totalOprands ;  
+		 
+		 return totalComputations;
+		 
 	 }
 	 
 	 
-	 /**
-	  * Adds an element beneath the first element in the stack
-	  * @param val The value to add
-	  * @param op The math operator
-	  */
-	 private void shuffle(Double val,char op)
-	 {
-		Action<Double> top = stack.pop();
-		stack.push(new Action<Double>(val,op));
-		stack.push(top);
-	 } 
+	 // reverse the order of a stack
+	 private Stack<Action<Double>> invert(Stack<Action<Double>> stack) 
+     {
+		 Stack<Action<Double>> reverse = new  Stack<Action<Double>>();
+		 while(!stack.empty())	reverse.push(stack.pop());
+		 return reverse ;		
+	 }
+	 private void shuffle(Action<Double> act) 
+     {
+		 Stack<Action<Double>> reverse = new  Stack<Action<Double>>();
+		 while(!deleted.empty())	reverse.push(deleted.pop());
+		 deleted.push(act);
+		 while(!reverse.empty())	deleted.push(reverse.pop());
+		 		
+	 }
 	
 	
 }
+
 	
 
 
