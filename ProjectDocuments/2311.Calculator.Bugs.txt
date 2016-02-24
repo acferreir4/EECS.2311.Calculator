@@ -1,0 +1,46 @@
+2311 Bugs:
+Updated as of Feb. 23, 2016
+
+(FIXED)
+Spamming "undo" makes "Start new computation | value = 0" appear in display
+	- Spamming undo on this removes a char each time
+	- At the end, pressing undo makes this message appear again and cycle repeats indefinitely
+
+Spamming "undo" after "ENTER"ing a number makes the calculator display "[XXX] | value = XXX" where XXX is the number
+	- Same thing with "(XXX+YY) | value = XXXYY" after adding
+
+In the case that text is displayed, ("division by 0", "Start new...", etc.) and select is pressed, an exception occurs
+
+(TO BE DONE)
+Any operations with large numbers in input or answer causes an exception
+	- 999999!
+
+20! gives overflow error (negative value)
+	- In that regard, 33! also gives a negative number, but 34! and beyond give 0
+
+Missing division by 0 error to display (currently throws exception)
+
+Negative zero by changing sign
+
+Dividing X by negative 0 gives 0/X
+
+Multiplying X by negative 0 gives 1 * X
+
+Negative factorial gives 1 (negative factorial should actually be invalid)
+
+99999999999999999999... ENTER returns 10
+
+99999999999 * 99999999999 following the logic from above point gives 10 * 10, but somehow equals 10
+
+If you do 1 ENTER 2 ENTER 3 ENTER, an operation on 3 and 2 (for example +), selecting the 1st index (value = 1) doesn't work
+	- The span and range in console show a value of 1, but should be 2 since 2 values in stack
+	- This means that any history before operation may not be in stack
+	- BUT (and this gets confusing) if without selecting, after adding doing something like adding again will add the '1' to '5'
+
+Any number with the tenth decimal 0 will instead be rounded to 3 decimal places instead of 2.
+	- Adding or multiplying any two numbers with this trait will give a 3 decimal place answer. Otherwise, it is 2 decimal places.
+
+Combining the two above (traits and operations done), SELECTing the first index will yield the same result.
+	- Selecting and undoing the 1st number won't actually do anything since right after, pressing + will add all three values.
+
+Doing cos(270) gives -0 as the output value in the display.
