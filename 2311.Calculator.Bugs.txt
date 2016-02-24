@@ -42,3 +42,5 @@ Any number with the tenth decimal 0 will instead be rounded to 3 decimal places 
 
 Combining the two above (traits and operations done), SELECTing the first index will yield the same result.
 	- Selecting and undoing the 1st number won't actually do anything since right after, pressing + will add all three values.
+
+Doing cos(270) gives -0 as the output value in the display.
