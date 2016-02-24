@@ -11,4 +11,15 @@ Andrew-----
 Feb 18
 -writing test script for model
 -testing: all currently implemented calc functions
+-write Test Document, include tests currently implemented
+
+Feb 22
+-implement new tests for modifications (!, (+/-), sin, cos, undo)
+-include more rigorous tests to check calculator's exception handling for boundary cases
+-update Test Document
+
+Feb 24
+-finishing touches on Test Document
+-create group website to hold all documents
+-create .jar file and upload to website
 
