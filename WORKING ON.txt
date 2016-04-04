@@ -1,12 +1,6 @@
 This file is to document specifically who is doing what.
 List all the methods you are documenting/testing
 
-Yari-----
-
-
-Tedi-----
-
-
 Andrew-----
 Feb 18
 -writing test script for model
