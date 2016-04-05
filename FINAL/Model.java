@@ -55,13 +55,14 @@ public class Model
 		
 	}
 	
+	public double returnStackTop() {
+		return stack.peek().evaluate(1.0);
+	}
+	
 	public void undo()  //  undo
 	{
  		    if(size()>0) 
 		    {
-			   if (!selection.active())    // delete last item on stack
-				{
-					
 				   Expression top = stack.pop();
 				   
 				   if(!(top.type()==TERM))				   
@@ -70,18 +71,7 @@ public class Model
 					  stack.push(top.removeFirst());
 					  stack.push(top.removeSecond()); 
 				    }
-					
-				}
-			  else   // delete selected items
-				   {
-					  Stack<Expression> selected = delete();
-					  while( !selected.empty() ) selected.pop() ; // garbage collection	
-				   }
-			 
-		    }
-		    
-         
-          selection.reset();  
+		    } 
           
 					
 	}
@@ -104,30 +94,11 @@ public class Model
 	  {
 		System.out.println("here in add");
 		
-		Expression result ;  // result item to be pushed on stack
-		
-		
-		 if( selection.active() ) // add selected
-		 { 
-			 
-			 Stack<Expression> selected = pick(); 
-			 if(!selected.isEmpty())  // selection in valid range
-			 {
-			   result = selected.pop();			 
-			   while( !selected.empty() )  result =  new Addition (selected.pop(),result) ;
-			   stack.push(result);
-			 }
-			 selection.reset();		 
-		 }
-		 else   //  add last 2 
-		 {			 
+			Expression result ;  // result item to be pushed on stack		 
 			    
 			 Expression last = stack.pop();
-			    result = new Addition(stack.pop(),last);
-			    stack.push(result);
-			   
-		 }
-  
+			 result = new Addition(stack.pop(),last);
+			 stack.push(result);
 	  } 
 	}
 	
@@ -144,27 +115,9 @@ public class Model
 			
 			
 			Expression result ;  // result item to be pushed on stack
-			
-			
-			 if( selection.active() ) // add selected
-			 { 
-				 
-				 Stack<Expression> selected = pick(); 
-				 if(!selected.isEmpty())  // selection in valid range
-				 {
-				   result = selected.pop();			 
-				   while( !selected.empty() )  result =  new Subtraction (selected.pop(),result) ;
-				   stack.push(result);
-				 }
-				 selection.reset();		 
-			 }
-			 else   //  add last 2 
-			 {			 
 				    Expression last = stack.pop();
 				    result = new Subtraction(stack.pop(),last);
 				    stack.push(result);
-			 }
-	  
 		  } 
 	}
 	
@@ -178,30 +131,10 @@ public class Model
 	{
 		if(size()>1)
 		  {
-			
-			
-			Expression result ;  // result item to be pushed on stack
-			
-			
-			 if( selection.active() ) // add selected
-			 { 
-				 
-				 Stack<Expression> selected = pick(); 
-				 if(!selected.isEmpty())  // selection in valid range
-				 {
-				   result = selected.pop();			 
-				   while( !selected.empty() )  result =  new Multiplication(selected.pop(),result) ;
-				   stack.push(result);
-				 }
-				 selection.reset();		 
-			 }
-			 else   //  add last 2 
-			 {			 
-				    Expression last = stack.pop();
+			Expression result ;  // result item to be pushed on stack		 
+			Expression last = stack.pop();
 				    result = new Multiplication(stack.pop(),last);
 				    stack.push(result);
-			 }
-	  
 		  } 	
 	}
 	
@@ -252,27 +185,23 @@ public class Model
 		
 	}
 	
-	/*public double sin(int degree)
-	{
-		// expressionMode.off();
-		return Math.sin(radian(degree)) ;
-		 
+	public boolean sin() {
+		if(!stack.empty()) {
+			double value = stack.pop().calculate();
+			stack.push(new Term(0, Math.sin(value), true));
+			return true;
+		}
+		return false;
 	}
 	
-	public double cos(int degree)
-	{
-		// expressionMode.off();
-		return Math.cos(radian(degree)) ;
-		
-	} */
-	
-	/*public static Long factorial(int num) 
-	{
-		// expressionMode.off();
-		Integer i = num;
-		Long n = i.longValue();
-	    return  ((n <= 1) ? 1 : (int)(n*factorial(n-1)));
-	}  */
+	public boolean cos() {
+		if(!stack.empty()) {
+			double value = stack.pop().calculate();
+			stack.push(new Term(0, Math.cos(value), true));
+			return true;
+		}
+		return false;
+	}
 	
 	public Expression lastExpression()  // get the top of the stack
 	{

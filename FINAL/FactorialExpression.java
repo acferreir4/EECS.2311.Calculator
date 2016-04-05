@@ -4,6 +4,7 @@ public class FactorialExpression extends Expression
 	
 	private Expression base;
 	private boolean isFirst;
+	private static boolean isNegative = false;
 	
 	
 	public FactorialExpression (Expression b, boolean fst)
@@ -33,7 +34,7 @@ public class FactorialExpression extends Expression
     }
     public static long factorial(long n) 
 	{
-		// expressionMode.off();
+    	if(n < 0) isNegative = true;
 		
 	    return  ((n <= 1) ? 1 : n*factorial(n-1));
 	}
@@ -47,5 +48,9 @@ public class FactorialExpression extends Expression
     {
        return new FactorialExpression(base.clone(),isFirst);
 
+    }
+    
+    public static boolean isNegative() {
+    	return isNegative;
     }
 }
